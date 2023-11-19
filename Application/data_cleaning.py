@@ -5,7 +5,8 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import PyPDF2
-
+import pypdfium2 as pdfium
+import pandas as pd
 
 def cleaning(sentence):
     """Explain function"""
@@ -32,32 +33,57 @@ def cleaning(sentence):
     return cleaned_sentence
 
 def extract_text_from_pdf(pdf_path):
+    # Open the PDF document
+    pdf = pdfium.PdfDocument(pdf_path)
+
+    # Initialize an empty string to store the extracted text
+    extracted_text = ""
+
+    # Iterate through each page in the PDF
+    for page_number in range(len(pdf)):
+        # Get the current page
+        page = pdf[page_number]
+
+        # Load the page's text content
+        text_page = page.get_textpage()
+
+        # Extract text from the whole page
+        text_all = text_page.get_text_range()
+
+        # Append the extracted text to the overall text
+        extracted_text += text_all
+
+    return extracted_text
+
+def process_pdfs_and_build_dataframe(directory_path, start_index=0, end_index=None):
     """Explain function"""
-    with open(pdf_path, 'rb') as file:
-        pdf_reader = PyPDF2.PdfReader(file)
-        text = ""
-        num_pages = len(pdf_reader.pages)
+    document_texts = {"Name of the document": [], "Clean text": []}
 
-        for page_number in range(num_pages):
-            if page_number < num_pages:
-                text += pdf_reader.pages[page_number].extract_text()
+    # Liste de fichiers PDF dans le répertoire
+    pdf_files = [filename for filename in os.listdir(directory_path) if filename.endswith(".pdf")]
 
-        return text
+    # Ajustez les indices pour obtenir la plage spécifiée
+    if end_index is None:
+        end_index = len(pdf_files)
+    else:
+        end_index = min(end_index, len(pdf_files))
 
-def process_pdfs_and_build_dictionary(directory_path):
-    """Explain function"""
-    document_texts = {}
-    i=0
+    # Traitement des fichiers dans la plage spécifiée
+    for i in range(start_index, end_index):
+        filename = pdf_files[i]
+        pdf_path = os.path.join(directory_path, filename)
+        pdf_text = extract_text_from_pdf(pdf_path)
+        cleaned_text = cleaning(pdf_text)
 
-    for filename in os.listdir(directory_path):
-        if filename.endswith(".pdf"):
-            pdf_path = os.path.join(directory_path, filename)
-            pdf_text = extract_text_from_pdf(pdf_path)
-            cleaned_text = cleaning(pdf_text)
+        # Ajouter le nom du fichier et le texte nettoyé au dictionnaire
+        document_texts["Name of the document"].append(filename)
+        document_texts["Clean text"].append(cleaned_text)
+        print(f"Document {i + 1}")
 
-            # Add the filename and cleaned text in a dictionnary
-            document_texts[filename] = cleaned_text
-            print(i)
-            i += 1
+    # Convertir le dictionnaire en un DataFrame Pandas
+    document_df = pd.DataFrame(document_texts)
 
-    return document_texts
+    # Appliquer la fonction de nettoyage à la colonne "Clean text"
+    document_df["Clean text"] = document_df["Clean text"].apply(cleaning)
+
+    return document_df
