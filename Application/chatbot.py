@@ -6,7 +6,8 @@ import joblib
 
 # Function to find the document similar to the request
 def get_most_similar_documents(query, tfidf_matrix, tfidf_vectorizer, top_n=5):
-    """Explain function"""
+    """Cleaning of a sentence and use of a model to calculate the similarity
+    between the query and PDF's documents"""
     data_path = "../Data/"
     df = pd.read_excel(os.path.join(data_path, "output_all_batches.xlsx"))
     df["Clean text"].fillna("", inplace=True)
@@ -31,6 +32,8 @@ def get_most_similar_documents(query, tfidf_matrix, tfidf_vectorizer, top_n=5):
 
 
 def chatbot():
+    """Chatbot that accept a query as input and document corresponding
+    to the query as output"""
     tfidf_matrix = joblib.load("tfidf_matrix.joblib")
     tfidf_vectorizer = joblib.load("tfidf_vectorizer.joblib")
     print("Welcome to this document retrieval chatbot !")
