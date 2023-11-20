@@ -68,12 +68,13 @@ using keywords they can remember.
 ### 5. Testing the Chatbot
 
 - Tested the chatbot by querying information like "How to use an oven."
-- Observed the output, including document names, clean text, and similarity scores.
+- Observed the output, including document names and similarity scores.
 
 ### 6. Possible Improvements
 
 - Perform preprocessing for various languages to enhance multilingual support.
 - Implement a feature to provide direct access links to the relevant documents for user convenience.
+- Use other models like Word2ec
 
 
 
