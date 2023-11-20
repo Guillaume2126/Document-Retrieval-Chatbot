@@ -1,0 +1,4 @@
+langchain
+PyPDF2
+pypdfium2
+openpyxl
