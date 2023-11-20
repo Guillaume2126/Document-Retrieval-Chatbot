@@ -1,12 +1,16 @@
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
-from Application.data_cleaning import cleaning
+from data_cleaning import cleaning
 import pandas as pd
 import os
 import joblib
 
 # Function to find the document similar to the request
 def get_most_similar_documents(query, tfidf_matrix, tfidf_vectorizer, top_n=5):
+    """Explain function"""
+    data_path = "../Data/"
+    df = pd.read_excel(os.path.join(data_path, "output_all_batches.xlsx"))
+    df["Clean text"].fillna("", inplace=True)
+
     # Clean and vectorize the request
     query = cleaning(query)
     query_vector = tfidf_vectorizer.transform([query])
@@ -18,11 +22,10 @@ def get_most_similar_documents(query, tfidf_matrix, tfidf_vectorizer, top_n=5):
     document_indices = cosine_similarities.argsort()[:-top_n-1:-1]
 
     # Create a DataFrame with the results
-    result_df = pd.DataFrame({
-        "Name of the document": ["Document {}".format(i+1) for i in range(top_n)],
-        "Clean text": ["" for _ in range(top_n)],
-        "Similarity Score": cosine_similarities[document_indices]
-    })
+    result_df = df.iloc[document_indices].copy()
+
+    # Add a column for similarity scores
+    result_df["Similarity Score"] = cosine_similarities[document_indices]
 
     return result_df
 
@@ -39,7 +42,7 @@ def chatbot():
         else:
             similar_documents = get_most_similar_documents(user_query, tfidf_matrix, tfidf_vectorizer)
             print("Documents corresponding to the request :")
-            print(similar_documents[["Name of the document", "Clean text", "Similarity Score"]])
+            print(similar_documents[["Name of the document", "Similarity Score"]])
 
 if __name__ == "__main__":
     chatbot()
